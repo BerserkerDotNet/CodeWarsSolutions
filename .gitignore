@@ -3,6 +3,7 @@
 # ignore logs, OS cache files
 *.log
 .DS_Store*
+.vs*
 ehthumbs.db
 Icon?
 Thumbs.db
