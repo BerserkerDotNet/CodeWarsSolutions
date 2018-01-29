@@ -52,10 +52,6 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\IPValidation\IPValidation.csproj">
-      <Project>{ded13f67-a448-4792-bf41-6791e269d542}</Project>
-      <Name>IPValidation</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\src\MorseCode\MorseCode.csproj">
       <Project>{6BA2AE64-E593-4037-8D4C-638ED04B7F62}</Project>
       <Name>MorseCode</Name>

@@ -1,7 +1,7 @@
-﻿using IPValidation;
-using NUnit.Framework;
+﻿using NUnit.Framework;
+using Solutions.IPValidation;
 
-namespace SolutionsTests
+namespace KataTests
 {
     [TestFixture]
     public class IPValidatorTest
