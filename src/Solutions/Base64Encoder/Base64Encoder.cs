@@ -1,12 +1,40 @@
-﻿using System;
+﻿using Solutions.Infrastructure;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
 namespace Solutions.Base64Encoder
 {
-    public class Base64Encoder
+    public class Base64Encoder : ISolution
     {
+        public string DisplayName => "Base64 encoder/decoder";
+
+        public void Execute(IHost host)
+        {
+            host.Show("Select an option:");
+            host.Show("1. Encode");
+            host.Show("2. Decode");
+            var option = host.Read<int>();
+            var data = host.Read<string>("Enter a string");
+
+            var result = string.Empty;
+            if (option == 1)
+            {
+                result = Base64Utils.ToBase64(data);
+            }
+            else if (option == 2)
+            {
+                result = Base64Utils.FromBase64(data);
+            }
+            else
+            {
+                host.Show($"Option '{option}' is not recognized.");
+            }
+
+            host.Show($"Result: {result}");
+        }
+
         public static class Base64Utils
         {
             static string alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";

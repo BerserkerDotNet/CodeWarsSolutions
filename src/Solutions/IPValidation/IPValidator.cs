@@ -1,10 +1,20 @@
-﻿using System.Globalization;
+﻿using Solutions.Infrastructure;
+using System.Globalization;
 using System.Linq;
 
 namespace Solutions.IPValidation
 {
-    public class IPValidator
+    public class IPValidator : ISolution
     {
+        public string DisplayName => "IP validator";
+
+        public void Execute(IHost host)
+        {
+            var address = host.Read<string>("Enter IP address to validate:");
+            var result = IsValid(address) ? "valid" : "not valid";
+            host.Show($"'{address}' is {result} IP address");
+        }
+
         public bool IsValid(string address)
         {
             return SimpleValidation(address);

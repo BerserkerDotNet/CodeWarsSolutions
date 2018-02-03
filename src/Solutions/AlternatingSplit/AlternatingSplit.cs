@@ -1,44 +1,75 @@
-﻿using System.Text;
+﻿using Solutions.Infrastructure;
+using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Solutions.AlternatingSplit
 {
-    public class AlternatingSplit
+    public class AlternatingSplit : ISolution
     {
-        public static string Encrypt(string s, int n)
+        public string DisplayName => "Alternating Split";
+
+        public void Execute(IHost host)
         {
-            if (string.IsNullOrEmpty(s) || n <= 0)
+            var input = host.Read<string>("Enter a command ([/D or /E] <string> /N <number>)");
+            var inputMatch = Regex.Match(input, @"(?<cmd>/D|/E) (?<input>[^/]+) /N (?<number>\d+)", RegexOptions.IgnoreCase);
+            if (!inputMatch.Success)
             {
-                return s;
+                host.Show("Input is not in a correct format.");
+                return;
+            }
+
+            var cmd = inputMatch.Groups["cmd"].Value;
+            var str = inputMatch.Groups["input"].Value;
+            var number = int.Parse(inputMatch.Groups["number"].Value);
+            var result = string.Empty;
+
+            if (cmd.ToLower() == "/e")
+            {
+                result = Encrypt(str, number);
+            }
+            else
+            {
+                result = Decrypt(str, number);
+            }
+
+            host.Show($"Result: {result}");
+        }
+
+        public string Encrypt(string input, int n)
+        {
+            if (string.IsNullOrEmpty(input) || n <= 0)
+            {
+                return input;
             }
 
             for (int i = 1; i <= n; i++)
             {
-                var sb = new StringBuilder(s.Length);
-                EncryptInternal(sb, s, 0);
-                s = sb.ToString();
+                var sb = new StringBuilder(input.Length);
+                EncryptInternal(sb, input, 0);
+                input = sb.ToString();
             }
 
-            return s;
+            return input;
         }
 
-        public static string Decrypt(string s, int n)
+        public string Decrypt(string input, int n)
         {
-            if (string.IsNullOrEmpty(s) || n <= 0)
+            if (string.IsNullOrEmpty(input) || n <= 0)
             {
-                return s;
+                return input;
             }
 
             for (int i = 1; i <= n; i++)
             {
-                var sb = new StringBuilder(s.Length);
-                DecryptInternal(sb, s, 0);
-                s = sb.ToString();
+                var sb = new StringBuilder(input.Length);
+                DecryptInternal(sb, input, 0);
+                input = sb.ToString();
             }
 
-            return s;
+            return input;
         }
 
-        private static void EncryptInternal(StringBuilder sb, string s, int index)
+        private void EncryptInternal(StringBuilder sb, string s, int index)
         {
             if (index == s.Length)
             {
@@ -77,7 +108,7 @@ namespace Solutions.AlternatingSplit
             //}
         }
 
-        private static void DecryptInternal(StringBuilder sb, string s, int index)
+        private void DecryptInternal(StringBuilder sb, string s, int index)
         {
             var half = (s.Length / 2);
             if (half + index < s.Length)
@@ -91,5 +122,4 @@ namespace Solutions.AlternatingSplit
             }
         }
     }
-
 }

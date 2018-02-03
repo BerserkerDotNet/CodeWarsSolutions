@@ -1,10 +1,20 @@
-﻿using System.Text;
+﻿using Solutions.Infrastructure;
+using System.Text;
 
 namespace Solutions.MorseCode
 {
-    public static class MorseCode
+    public class MorseCode : ISolution
     {
-        public static string Decode(string morseCode)
+        public string DisplayName => "Morse code";
+
+        public void Execute(IHost host)
+        {
+            var code = host.Read<string>("Enter the in morse code:");
+            var message = Decode(code);
+            host.Show($"Result: {message}");
+        }
+
+        public string Decode(string morseCode)
         {
             var result = new StringBuilder();
             var temp = new StringBuilder(9);
@@ -32,7 +42,7 @@ namespace Solutions.MorseCode
             return result.ToString();
         }
 
-        private static void AddSymbol(StringBuilder morse, StringBuilder result)
+        private void AddSymbol(StringBuilder morse, StringBuilder result)
         {
             if (morse.Length > 0)
             {
