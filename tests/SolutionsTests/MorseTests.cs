@@ -12,7 +12,8 @@ namespace SolutionsTests
         [TestCase("  .. .    ", "IE")]
         public void Morse_Basic(string morse, string expected)
         {
-            var result = MorseCode.Decode(morse);
+            var code = new MorseCode();
+            var result = code.Decode(morse);
             Assert.AreEqual(expected, result);
         }
     }

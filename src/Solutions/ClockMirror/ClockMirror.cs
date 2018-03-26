@@ -1,10 +1,20 @@
-﻿using System;
+﻿using Solutions.Infrastructure;
+using System;
 
 namespace Solutions.ClockMirror
 {
-    public class ClockMirror
+    public class ClockMirror : ISolution
     {
-        public static string WhatIsTheTime(string timeInMirror)
+        public string DisplayName => "Clock mirror";
+
+        public void Execute(IHost host)
+        {
+            var time = host.Read<string>("Enter time (HH:mm):");
+            var result = WhatIsTheTime(time);
+            host.Show($"Result: {result}");
+        }
+
+        public string WhatIsTheTime(string timeInMirror)
         {
             const int minutesInHour = 60;
             const int TwelveHours = 720;

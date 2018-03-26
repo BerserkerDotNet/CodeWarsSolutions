@@ -1,12 +1,20 @@
-﻿using System;
+﻿using Solutions.Infrastructure;
 using System.Collections.Generic;
 using System.Text;
 
 namespace Solutions.DuplicateEncoder
 {
-    public class DuplicateEncoder
+    public class DuplicateEncoder : ISolution
     {
-        public static string DuplicateEncode(string word)
+        public string DisplayName => "Duplicate encoder";
+
+        public void Execute(IHost host)
+        {
+            var text = host.Read<string>("Enter text:");
+            host.Show($"Result {DuplicateEncode(text)}");
+        }
+
+        public string DuplicateEncode(string word)
         {
             var countTable = new Dictionary<char, int>(word.Length);
             var sb = new StringBuilder();
@@ -14,7 +22,7 @@ namespace Solutions.DuplicateEncoder
             return sb.ToString();
         }
 
-        private static void ProcessSymbol(string s, Dictionary<char, int> countTable, StringBuilder sb)
+        private void ProcessSymbol(string s, Dictionary<char, int> countTable, StringBuilder sb)
         {
             if (s.Length == 0)
             {
