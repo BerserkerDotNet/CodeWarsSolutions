@@ -11,7 +11,7 @@ namespace SolutionsTests
         [Test, TestCaseSource(nameof(TestData))]
         public void ShouldReturnCorrectList(Node tree, List<int> expectedArray)
         {
-            var result = new SortBinaryTreeByLevels().Sort(tree);
+            var result = new SortBinaryTreeByLevels().TreeByLevels(tree);
             result.Should().BeEquivalentTo(expectedArray, o => o.WithStrictOrdering());
         }
 
