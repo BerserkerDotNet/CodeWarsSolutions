@@ -27,7 +27,7 @@ namespace Solutions.CaesarCipher
             result[3] = GetSubString(resultString, 3, chunkLength);
             result[4] = GetSubString(resultString, 4, chunkLength);
 
-            return result;
+            return result.ToArray();
         }
 
         public string Decrypt(string[] parts, int shift)
@@ -36,7 +36,44 @@ namespace Solutions.CaesarCipher
             return TransformText(cipherText, shift, decrypting: true);
         }
 
-        private string TransformText(string text, int shift, bool decrypting)
+        public string[] Encrypt2(string plainText, int shift)
+        {
+            var resultString = TransformText(plainText, shift, decrypting: false, isFixedShift: true);
+            resultString = $"{GetPrefix(plainText)}{resultString}";
+            var chunkLength = (int)Math.Ceiling(resultString.Length / (double)5);
+            var result = new string[5];
+            result[0] = GetSubString(resultString, 0, chunkLength);
+            result[1] = GetSubString(resultString, 1, chunkLength);
+            result[2] = GetSubString(resultString, 2, chunkLength);
+            result[3] = GetSubString(resultString, 3, chunkLength);
+            result[4] = GetSubString(resultString, 4, chunkLength);
+
+            return result;
+        }
+
+        public string Decrypt2(string[] parts)
+        {
+            var prefix = parts[0].Substring(0, 3);
+            var shift = Alphabet.IndexOf(char.ToUpper(prefix[2])) - Alphabet.IndexOf(char.ToUpper(prefix[0]));
+            if (shift < 0)
+            {
+                shift = shift + Alphabet.Length;
+            }
+
+            var cipherText = string.Concat(parts);
+            var transformedText = TransformText(cipherText, shift, decrypting: true, isFixedShift: true);
+            return transformedText.Substring(2);
+        }
+
+        private string GetPrefix(string plainText)
+        {
+            var firstLetterIdx = Alphabet.IndexOf(char.ToUpper(plainText[0]));
+            var prefixIndex = firstLetterIdx + 1 == Alphabet.Length ? 0 : firstLetterIdx + 1;
+            var prefix = $"{char.ToLower(plainText[0])}{char.ToLower(Alphabet[prefixIndex])}";
+            return prefix;
+        }
+
+        private string TransformText(string text, int shift, bool decrypting, bool isFixedShift = false)
         {
             var sb = new StringBuilder(text.Length);
             for (int i = 0; i < text.Length; i++)
@@ -55,7 +92,10 @@ namespace Solutions.CaesarCipher
                     sb.Append(shiftedChar);
                 }
 
-                shift++;
+                if (!isFixedShift)
+                {
+                    shift++;
+                }
             }
             return sb.ToString();
         }
