@@ -1,7 +1,6 @@
 ﻿using Solutions.Infrastructure;
 using System;
-using System.Diagnostics;
-using System.Linq;
+using System.Collections.Generic;
 using System.Threading;
 
 namespace Solutions.PathFinder
@@ -16,21 +15,28 @@ namespace Solutions.PathFinder
             return maze.Solve(0, 0);
         }
 
+        public int ShortestPath(string mazeString)
+        {
+            var maze = new Maze(mazeString);
+            return maze.ShortestPath((0, 0));
+        }
+
         public void Execute(IHost host)
         {
 
-            var mazeString = "......\n" +
-                  "......\n" +
-                  "......\n" +
-                  "......\n" +
-                  ".....W\n" +
-                  "..W...";
+            var mazeString = ".......W\n" +
+                              "WWWWWW.W\n" +
+                              "...WWW.W\n" +
+                              ".W.....W\n" +
+                              ".WWW.WWW\n" +
+                              ".WWWWWWW\n" +
+                              "........";
             Console.Clear();
             Console.CursorVisible = false;
             // var mazeString = host.Read<string>("Enter maze:");
             var maze = new Maze(mazeString);
             maze.OnMove += Maze_OnMove;
-            var result = maze.Solve(0, 0);
+            var result = maze.ShortestPath((0, 0));
             host.Show($"Result: {result}");
             Console.CursorVisible = true;
         }
@@ -49,6 +55,7 @@ namespace Solutions.PathFinder
                 }
                 Console.WriteLine();
             }
+            Console.WriteLine("Step #" + args.Step);
         }
     }
 
@@ -108,6 +115,56 @@ namespace Solutions.PathFinder
             return false;
         }
 
+        public int ShortestPath((int x, int y) start)
+        {
+            var steps = 0;
+            var itemsToVisit = new Queue<(int x, int y)>(_mazeArray.Length);
+            itemsToVisit.Enqueue(start);
+            _mazeMap[start.x, start.y] = true;
+
+            // north, east, south, west
+            var dc = new[] { 0, 1, 0, -1 };
+            var dr = new[] { -1, 0, 1, 0 };
+
+            var nodesInLayer = 1;
+            var nodesInNextLayer = 0;
+            while (itemsToVisit.Count > 0)
+            {
+                var item = itemsToVisit.Dequeue();
+
+                if (IsAtExit(item.x, item.y))
+                {
+                    return steps;
+                }
+                
+                // Visit every direction
+                for (int i = 0; i < 4; i++)
+                {
+                    var newX = item.x + dc[i];
+                    var newY = item.y + dr[i];
+                     
+                    if (newX < 0 || newX == _mazeArray.GetLength(0)) continue;
+                    if (newY < 0 || newY == _mazeArray.GetLength(1)) continue;
+                    if (IsAlreadyVisited(newX, newY) || IsWall(newX, newY)) continue;
+
+                    itemsToVisit.Enqueue((newX, newY));
+                    _mazeMap[newX, newY] = true;
+                    nodesInNextLayer++;
+                    OnMove?.Invoke(this, new OnMoveEventArgs(_mazeMap, _mazeArray, steps));
+                }
+
+                nodesInLayer--;
+                if (nodesInLayer == 0)
+                {
+                    nodesInLayer = nodesInNextLayer;
+                    nodesInNextLayer = 0;
+                    steps++;
+                }
+            }
+
+            return -1;
+        }
+
         public event EventHandler<OnMoveEventArgs> OnMove;
 
         private bool IsAlreadyVisited(int x, int y)
@@ -121,14 +178,16 @@ namespace Solutions.PathFinder
         }
     }
 
-
     public class OnMoveEventArgs : EventArgs
     {
-        public OnMoveEventArgs(bool[,] map, char[,] maze)
+        public OnMoveEventArgs(bool[,] map, char[,] maze, int step = 0)
         {
             Map = map;
             Maze = maze;
+            Step = step;
         }
+
+        public int Step { get; set; }
 
         public bool[,] Map { get; set; }
 
