@@ -24,21 +24,37 @@ namespace Solutions.PathFinder
         public void Execute(IHost host)
         {
 
-            var mazeString = ".......W\n" +
-                              "WWWWWW.W\n" +
-                              "...WWW.W\n" +
-                              ".W.....W\n" +
-                              ".WWW.WWW\n" +
-                              ".WWWWWWW\n" +
-                              "........";
+            var mazeString = ".....W\n" +
+           "....W.\n" +
+           ".W.W..\n" +
+           ".W..W.\n" +
+           "..WWWW\n" +
+           "......";
             Console.Clear();
             Console.CursorVisible = false;
             // var mazeString = host.Read<string>("Enter maze:");
             var maze = new Maze(mazeString);
             maze.OnMove += Maze_OnMove;
+            maze.OnExitFound += Maze_OnExitFound;
             var result = maze.ShortestPath((0, 0));
             host.Show($"Result: {result}");
             Console.CursorVisible = true;
+        }
+
+        private void Maze_OnExitFound(object sender, OnExitFoundEventArgs e)
+        {
+            var node = e.Route;
+            var pos = (left: Console.CursorLeft, top: Console.CursorTop);
+            var color = Console.ForegroundColor;
+            while (node != null)
+            {
+                Console.SetCursorPosition(node.X, node.Y);
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.Write("X");
+                node = node.Parent;
+            }
+            Console.ForegroundColor = color;
+            Console.SetCursorPosition(pos.left, pos.top);
         }
 
         private void Maze_OnMove(object sender, OnMoveEventArgs args)
@@ -118,8 +134,8 @@ namespace Solutions.PathFinder
         public int ShortestPath((int x, int y) start)
         {
             var steps = 0;
-            var itemsToVisit = new Queue<(int x, int y)>(_mazeArray.Length);
-            itemsToVisit.Enqueue(start);
+            var itemsToVisit = new Queue<(int x, int y, Node parent)>(_mazeArray.Length);
+            itemsToVisit.Enqueue((start.x, start.y, null));
             _mazeMap[start.x, start.y] = true;
 
             // north, east, south, west
@@ -128,12 +144,14 @@ namespace Solutions.PathFinder
 
             var nodesInLayer = 1;
             var nodesInNextLayer = 0;
+            var currentNode = new Node(start.x, start.y, parent: null);
             while (itemsToVisit.Count > 0)
             {
                 var item = itemsToVisit.Dequeue();
-
+                currentNode = new Node(item.x, item.y, item.parent);
                 if (IsAtExit(item.x, item.y))
                 {
+                    OnExitFound?.Invoke(this, new OnExitFoundEventArgs(currentNode));
                     return steps;
                 }
                 
@@ -147,7 +165,7 @@ namespace Solutions.PathFinder
                     if (newY < 0 || newY == _mazeArray.GetLength(1)) continue;
                     if (IsAlreadyVisited(newX, newY) || IsWall(newX, newY)) continue;
 
-                    itemsToVisit.Enqueue((newX, newY));
+                    itemsToVisit.Enqueue((newX, newY, currentNode));
                     _mazeMap[newX, newY] = true;
                     nodesInNextLayer++;
                     OnMove?.Invoke(this, new OnMoveEventArgs(_mazeMap, _mazeArray, steps));
@@ -166,6 +184,8 @@ namespace Solutions.PathFinder
         }
 
         public event EventHandler<OnMoveEventArgs> OnMove;
+
+        public event EventHandler<OnExitFoundEventArgs> OnExitFound;
 
         private bool IsAlreadyVisited(int x, int y)
         {
@@ -192,5 +212,34 @@ namespace Solutions.PathFinder
         public bool[,] Map { get; set; }
 
         public char[,] Maze { get; set; }
+    }
+
+    public class OnExitFoundEventArgs : EventArgs
+    {
+        public OnExitFoundEventArgs(Node route)
+        {
+            Route = route;
+        }
+
+        public Node Route { get; }
+    }
+
+    public class Node
+    {
+        public Node(int x, int y, Node parent)
+        {
+            X = x;
+            Y = y;
+            Parent = parent;
+            Children = new List<Node>();
+        }
+
+        public int X { get; set; }
+
+        public int Y { get; set; }
+
+        public List<Node> Children { get; set; }
+
+        public Node Parent { get; set; }
     }
 }
